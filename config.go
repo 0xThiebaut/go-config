@@ -92,8 +92,13 @@ func (c *config) write(key []string, element reflect.Value, value interface{}) (
 					return element, err
 				}
 				if !v.CanConvert(f.Type) {
-
 					return element, &ErrIncompatibleType{Type: f.Type.String(), ConfigurationError: &ConfigurationError{name}}
+				}
+				if !e.CanSet() {
+					n := reflect.Indirect(reflect.New(t))
+					n.Set(element)
+					element = n
+					e = n.Field(i)
 				}
 				e.Set(v.Convert(f.Type))
 				return element, nil
@@ -132,7 +137,6 @@ func (c *config) write(key []string, element reflect.Value, value interface{}) (
 			err.From(name)
 			return element, err
 		}
-
 		if !e.CanConvert(t) {
 			return element, &ErrIncompatibleType{Type: t.String(), ConfigurationError: &ConfigurationError{name}}
 		}

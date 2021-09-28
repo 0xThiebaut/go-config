@@ -110,6 +110,29 @@ func TestConfig_WriteRead(t *testing.T) {
 	}
 }
 
+func TestConfig_WriteRecursive(t *testing.T) {
+	type baz struct {
+		Value string
+	}
+	type foo struct {
+		Bar map[string]baz
+	}
+	type data struct {
+		Foo foo
+	}
+	d := &data{}
+	c := New(d)
+	b := "baz"
+	if err := c.Write("foo.bar.baz.value", b); err != nil {
+		t.Fatal(err)
+	}
+	if v, ok := d.Foo.Bar["baz"]; !ok {
+		t.Fatal("expected map to to be set")
+	} else if b != v.Value {
+		t.Fatalf("expected %#v, got %#v", b, v.Value)
+	}
+}
+
 func ExampleConfig_ReadString() {
 	type Config struct {
 		My            string
